@@ -23,8 +23,10 @@
 -define(APP, 'gen_rpc').
 
 %%% Test State
--record(state, { client, %% Id of current test client
-                 replies %% Expected number of Rpc replies from test call
+-record(state, { target, %% Id of current test client
+                 port, %% connection port
+                 workerId, %% Id of test worker same as test Id
+                 replies %% Number of Successful Rpc call
                }).
 
 %%% ===================================================
@@ -32,38 +34,42 @@
 %%% ===================================================
 new(Id) ->
     {ok, {?APP, loaded}} = ensure_deps_present(?APP),
-    {ok, connected} = ensure_target_node(),
+    {ok, {Targets, connected}} = ensure_target_nodes(),
+    Port = basho_bench_config:get('gen_rpc_port', undefined),
+    Target = choose_test_target(Targets, Port, Id),
+    {ok, #state{target=Target, port=Port, workerId=Id, replies=0}}.
 
-    {ok, State}.
-
-run(call, KeyGen, ValueGen, State) ->
-    Node = State#state.client,
-    case gen_rpc:call(?NODE, os, timestamp) of
+run(call, _KeyGen, _ValueGen, State) ->
+    TargetNode = State#state.target,
+    case gen_rpc:call(TargetNode , os, timestamp) of
         {'error', Reason} -> {error, Reason, State}; 
         {'EXIT', Reason} -> {error, Reason, State};
         {'badrpc', Reason} -> {error, Reason, State};
         {'badtcp', Reason} -> {error, Reason, State};
-        Result -> {ok, State}.
-    end.
+        _Ign -> Replies = State#state.replies,
+                {ok, State#state{replies=Replies+1}}
+    end;
  
-run(cast, KeyGen, ValueGen, State) ->
-    Node = State#state.client,
-    case gen_rpc:cast(?NODE, os, timestamp) of
+run(cast, _KeyGen, _ValueGen, State) ->
+    TargetNode = State#state.target,
+    case gen_rpc:cast(TargetNode, os, timestamp) of
         {'error', Reason} -> {error, Reason, State}; 
         {'EXIT', Reason} -> {error, Reason, State};
         {'badrpc', Reason} -> {error, Reason, State};
         {'badtcp', Reason} -> {error, Reason, State};
-        true -> {ok, State}
-    end.
+        true -> Replies = State#state.replies,
+                {ok, State#state{replies=Replies+1}}
+    end;
 
-run(safe_cast, KeyGen, ValueGen, State) ->
-    Node = State#state.client,
-    case gen_rpc:safe_cast(?NODE, os, timestamp) of
+run(safe_cast, _KeyGen, _ValueGen, State) ->
+    TargetNode = State#state.target,
+    case gen_rpc:safe_cast(TargetNode, os, timestamp) of
         {'error', Reason} -> {error, Reason, State}; 
         {'EXIT', Reason} -> {error, Reason, State};
         {'badrpc', Reason} -> {error, Reason, State};
         {'badtcp', Reason} -> {error, Reason, State};
-        Result -> {ok, State}
+        _Ign -> Replies = State#state.replies,
+                {ok, State#state{replies=Replies+1}}
     end.
 
 
@@ -78,21 +84,20 @@ ensure_deps_present(App)->
     end.
 
 ensure_target_nodes()-> 
-    Hosts   = basho_bench_config:get(gen_rpc_client_nodes),
-    Cookie  = basho_bench_config:get(gen_rpc_client_cookie, 'gen_rpc'),
-    TestTargets = choose_test_target(Hosts, Port, WorkerId)
+    TargetPool   = basho_bench_config:get('gen_rpc_client_target_nodes'),
+    Cookie  = basho_bench_config:get('gen_rpc_client_cookie', 'gen_rpc'),
     %% Initialize cookie for each of the nodes
     [begin 
         N0 = check_target_node(N),
         true = erlang:set_cookie(N0, Cookie),   
-        {ok, _SlaveApps} = rpc:call(N0, application, ensure_all_started, [?APP]),     
-     end|| N <- Nodes],
+        {ok, _SlaveApps} = rpc:call(N0, application, ensure_all_started, [?APP])    
+     end|| N <- TargetPool],
     %% Try to ping each of the nodes
-    ping_each(Nodes),
-    {ok, connected}.
+    ping_each(TargetPool),
+    {ok, {TargetPool, connected}}.
 
 check_target_node(Node) when Node =:= node() ->
-    ?FAIL_MSG("function=check_target_node event=test_driver_and_target_same module=\"~p\"", [Node]).
+    ?FAIL_MSG("function=check_target_node event=test_driver_and_target_same module=\"~p\"", [Node]),
     exit(test_target_is_localnode);
 check_target_node(Node) -> Node.
 
@@ -110,6 +115,6 @@ ping_each([Node | Rest]) ->
 choose_test_target(Hosts, Port, WorkerId)->
     %% Choose the node using our ID as a modulus
     TargetHost = lists:nth((WorkerId rem length(Hosts)+1), Hosts),
-    ?INFO("function=choose_test_target s:~p for worker ~p\n", [TargetHost, Port, WorkerId]).
+    ?INFO("function=choose_test_target Target=\"~p\" Port=\"~p\" WorkerId=\"~p\"", [TargetHost, Port, WorkerId]),
     TargetHost.
 
