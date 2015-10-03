@@ -9,6 +9,10 @@
                   sasl]},
   {mod, {basho_bench_app, []}},
   {env, [
+
+	 %% Other custom apps to run
+	 {custom_apps, [riakc, riak_pb]},
+
 	 %% Run mode: How should basho_bench started as a separate node, or part of an 
 	 %% other node. The default is standalone, other option is included.
 	 {app_run_mode, standalone},

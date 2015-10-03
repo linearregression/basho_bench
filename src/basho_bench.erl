@@ -307,9 +307,12 @@ setup_distributed_work() ->
     [pool:attach(SlaveName) || SlaveName <- SlaveNames],
     CodePaths = code:get_path(),
     rpc:multicall(SlaveNames, code, set_path, [CodePaths]),
-    Apps = [lager, basho_bench, getopt, bear, folsom, ibrowse, riakc, riak_pb, mochiweb, protobuffs, goldrush],
+    Apps = get_apps(),
     [distribute_app(App) || App <- Apps].
 
+get_apps()->
+    DefaultApps = [lager, basho_bench, getopt, bear, folsom, ibrowse, mochiweb, protobuffs, goldrush],
+    DefaultApps ++ basho_bench_config:get(custom_apps, []).
 
 deploy_module(Module) ->
     case basho_bench_config:get(distribute_work, false) of 
