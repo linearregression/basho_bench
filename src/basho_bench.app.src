@@ -1,5 +1,5 @@
 {application, basho_bench,
- [{description, "Riak Benchmarking Suite"},
+ [{description, "Basho Benchmarking Suite"},
   {vsn, git},
   {modules, []},
   {registered, [ basho_bench_sup ]},
@@ -11,7 +11,7 @@
   {env, [
 
 	 %% Other custom apps to run
-	 {custom_apps, [riakc, riak_pb]},
+	 %% {custom_apps, [riakc, riak_pb]},
 
 	 %% Run mode: How should basho_bench started as a separate node, or part of an 
 	 %% other node. The default is standalone, other option is included.
