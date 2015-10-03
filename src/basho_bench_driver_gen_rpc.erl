@@ -23,15 +23,48 @@
 -define(APP, 'gen_rpc').
 
 %%% Test State
--record(state, { client,
-                 bucket,
-                 replies }).
+-record(state, { client, %% Id of current test client
+                 replies %% Expected number of Rpc replies from test call
+               }).
 
 %%% ===================================================
 %%% Library interface
 %%% ===================================================
 new(Id) ->
+    {ok, {?APP, loaded}} = ensure_deps_present(?APP),
+    {ok, connected} = ensure_target_node(),
 
+    {ok, State}.
+
+run(call, KeyGen, ValueGen, State) ->
+    Node = State#state.client,
+    case gen_rpc:call(?NODE, os, timestamp) of
+        {'error', Reason} -> {error, Reason, State}; 
+        {'EXIT', Reason} -> {error, Reason, State};
+        {'badrpc', Reason} -> {error, Reason, State};
+        {'badtcp', Reason} -> {error, Reason, State};
+        Result -> {ok, State}.
+    end.
+ 
+run(cast, KeyGen, ValueGen, State) ->
+    Node = State#state.client,
+    case gen_rpc:cast(?NODE, os, timestamp) of
+        {'error', Reason} -> {error, Reason, State}; 
+        {'EXIT', Reason} -> {error, Reason, State};
+        {'badrpc', Reason} -> {error, Reason, State};
+        {'badtcp', Reason} -> {error, Reason, State};
+        true -> {ok, State}
+    end.
+
+run(safe_cast, KeyGen, ValueGen, State) ->
+    Node = State#state.client,
+    case gen_rpc:safe_cast(?NODE, os, timestamp) of
+        {'error', Reason} -> {error, Reason, State}; 
+        {'EXIT', Reason} -> {error, Reason, State};
+        {'badrpc', Reason} -> {error, Reason, State};
+        {'badtcp', Reason} -> {error, Reason, State};
+        Result -> {ok, State}
+    end.
 
 
 %%% ===================================================
@@ -41,13 +74,12 @@ ensure_deps_present(App)->
     %% Make sure the path is setup
     case code:which(App) of
         non_existing -> ?FAIL_MSG("function=ensure_deps_present event=module_not_found module=\"~p\"", [App]);
-        _ -> {ok, {App, loaded}
+        _ -> {ok, {App, loaded}}
     end.
 
 ensure_target_nodes()-> 
-    Nodes   = basho_bench_config:get(gen_rpc_client_nodes),
+    Hosts   = basho_bench_config:get(gen_rpc_client_nodes),
     Cookie  = basho_bench_config:get(gen_rpc_client_cookie, 'gen_rpc'),
-    MyNode  = basho_bench_config:get(gen_rpc_client_mynode, [basho_bench, longnames]),
     TestTargets = choose_test_target(Hosts, Port, WorkerId)
     %% Initialize cookie for each of the nodes
     [begin 
@@ -56,7 +88,8 @@ ensure_target_nodes()->
         {ok, _SlaveApps} = rpc:call(N0, application, ensure_all_started, [?APP]),     
      end|| N <- Nodes],
     %% Try to ping each of the nodes
-    ping_each(Nodes).
+    ping_each(Nodes),
+    {ok, connected}.
 
 check_target_node(Node) when Node =:= node() ->
     ?FAIL_MSG("function=check_target_node event=test_driver_and_target_same module=\"~p\"", [Node]).
