@@ -1,26 +1,13 @@
-%% -------------------------------------------------------------------
-%%
-%% basho_bench: Benchmarking Suite
-%%
-%% Copyright (c) 2009-2012 Basho Techonologies
-%%
-%% This file is provided to you under the Apache License,
-%% Version 2.0 (the "License"); you may not use this file
-%% except in compliance with the License.  You may obtain
-%% a copy of the License at
-%%
-%%   http://www.apache.org/licenses/LICENSE-2.0
-%%
-%% Unless required by applicable law or agreed to in writing,
-%% software distributed under the License is distributed on an
-%% "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-%% KIND, either express or implied.  See the License for the
-%% specific language governing permissions and limitations
-%% under the License.
-%%
-%% -------------------------------------------------------------------
+%%% -*-mode:erlang;coding:utf-8;tab-width:4;c-basic-offset:4;indent-tabs-mode:()-*-
+%%% ex: set ft=erlang fenc=utf-8 sts=4 ts=4 sw=4 et:
+%%%
+%%% Copyright 2015 Panagiotis Papadomitsos. All Rights Reserved.
+%%%
+%%% http://www.apache.org/licenses/LICENSE-2.0
+%%%
+
 -module(basho_bench_driver_behaviour).
--author('logisticregression').
+-author("Panagiotis Papadomitsos <pj@ezgr.net>").
 
 %% R15 and later
 -callback new(any()) -> {ok, any()}. 
