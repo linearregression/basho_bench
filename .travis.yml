@@ -1,14 +1,15 @@
+sudo: false
 language: erlang
 notifications:
   webhooks: http://basho-engbot.herokuapp.com/travis?key=480c77ff15f4a07db659862802cc3df9e7a5d5be
   email: eng@basho.com
 otp_release:
-  - 17.0 
-  - 17.1
-  - 17.3
-  - 17.4
+  - 18.0 
   - 17.5
-  - 18.0
+  - 17.4
+  - 17.4
+  - 17.3
+  - 17.0
 
 matrix:
   include:
