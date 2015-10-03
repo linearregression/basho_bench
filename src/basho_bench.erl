@@ -311,7 +311,7 @@ setup_distributed_work() ->
     [distribute_app(App) || App <- Apps].
 
 get_apps()->
-    DefaultApps = [lager, basho_bench, getopt, bear, folsom, ibrowse, mochiweb, protobuffs, goldrush],
+    DefaultApps = [lager, basho_bench, getopt, bear, folsom, ibrowse, mochiweb, goldrush],
     DefaultApps ++ basho_bench_config:get(custom_apps, []).
 
 deploy_module(Module) ->
@@ -328,8 +328,10 @@ distribute_app(App) ->
     % But, unfortunately there are negative interactions with escript and slave nodes
     CodeExtension = code:objfile_extension(),
     LibDir = code:lib_dir(App),
+    ?INFO("function=distribute_app codelibdir=(~s) Application=(~s)",[LibDir, App]),
     % Get what paths are in the code path that start with LibDir
     LibDirLen = string:len(LibDir),
+%    ?INFO("function=distribute_app codelibdir=(~s) Application=(~s)",[LibDirLen]),
     EbinsDir = lists:filter(fun(CodePathDir) -> string:substr(CodePathDir, 1, LibDirLen) ==  LibDir end, code:get_path()),
     StripEndFun = fun(Path) ->
         PathLen = string:len(Path),
