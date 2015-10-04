@@ -86,15 +86,31 @@ ensure_deps_present(App)->
 ensure_target_nodes()-> 
     TargetPool   = basho_bench_config:get('gen_rpc_client_target_nodes'),
     Cookie  = basho_bench_config:get('gen_rpc_client_cookie', 'gen_rpc'),
+    BenchmarkInitiator  = basho_bench_config:get('gen_rpc_client_benchmark', ['gen_rpc', longnames]),
+
     %% Initialize cookie for each of the nodes
+    %%ping_each(TargetPool),
     [begin 
-        N0 = check_target_node(N),
+        N0= check_target_node(N),
         true = erlang:set_cookie(N0, Cookie),   
+        ok = rpc:call(N0, code, add_pathsz, [code:get_path()]),
         {ok, _SlaveApps} = rpc:call(N0, application, ensure_all_started, [?APP])    
      end|| N <- TargetPool],
     %% Try to ping each of the nodes
     ping_each(TargetPool),
+    ?INFO("function=ensure_target_nodes event=test_target_started", []),
     {ok, {TargetPool, connected}}.
+
+spin_up_initiator(Node)->
+    %% Try to spin up net_kernel
+    case net_kernel:start(Node) of
+        {ok, _} ->
+            ?INFO("function=spin_up_initiator event=benchmark_initiator_up Node=\"~p\"", [node()]);
+        {error, {already_started, _}} ->
+            ok;
+        {error, Reason} ->
+            ?FAIL_MSG("function=spin_up_initiator event=fail_start_benchmark_initiator Reason=\"~p\"", [Reason])
+    end.
 
 check_target_node(Node) when Node =:= node() ->
     ?FAIL_MSG("function=check_target_node event=test_driver_and_target_same module=\"~p\"", [Node]),
