@@ -8,9 +8,9 @@ Gen_rpc is the project under test.
 
 ##The example setup:
 * one target node: gen_rpc_target@127.0.0.1 for taking all the requests. It must exist first.
-call run_target.sh
+call run_target.sh 
 * one test node gen_rpc_bench@127.0.0.1 to send out requests.
-call run_test.sh
+call run_test.sh 
 
 There are other setups configurations. Consult basho tech documentation.
 
@@ -20,18 +20,16 @@ There are other setups configurations. Consult basho tech documentation.
 ** Other options availble in Makefile
 
 ## Other Files/Folders of insterest:
+* examples/gen_rpc.config (your test configuration)
+* example_script
+  - gen_rpc_sample_run.pdf
+  - run_target.sh
+  - run_test.sh
+  - gen_rpc_sample_run.pdf (sample test result plot for one minute run)
+* tests ( test logs/crash logs etc. Results are in csv file.)
 
-* ./examples -- gen_rpc.config 
-* 
-*./example_script
-    --
-    --
-./tests ( test logs/crash logs etc. Results are in csv file.)
-Sample test run for a one minute test:
-example_script/gen_rpc_sample_run.pdf  <-- jsut a sample plot.
-
-Notes:
-Basho bench from this repo differs from that released by Basho Tech of the following:
+## Notes:
+* Basho bench from this repo differs from that released by Basho Tech of the following:
 * basho_bench official release does not support OTP 18 at the time of writing.
   - Several projects that only apply to testing riak are hardcoded (riakc, riak_pb)
   - basho/erlang_protobuffs fails compilation under otp 18. 
