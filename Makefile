@@ -37,6 +37,9 @@ locked-deps:
 compile: deps
 	# Temp hack to work around https://github.com/basho/riak-erlang-client/issues/151
 	#(cd deps/riak_pb ; ./rebar clean compile deps_dir=..)
+	#Basho Bench doesn't support rebar3, but gen_rpc does. They assume diff folder structures
+	#Call the following manually or from another script. The old rebar takes over.
+	#@(cd ./deps/gen_rpc && make all && cd ../..)
 	@(./rebar -vvv compile)
 
 clean:
