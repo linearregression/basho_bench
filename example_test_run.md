@@ -1,19 +1,20 @@
+## Info
 This is a example setup fo using basho bench.
 Gen_rpc is the project under test.
 
-Build the test tool:
+##Build the test tool:
 This build script is a hack. Basho bench is built under old version of rebar and assumes the old folder structure
 call build_test_tool.sh
    -- this calls basho bench make script & call gen_rpc build script
  
-The example setup:
+##The example setup:
 1) one target node: gen_rpc_target@127.0.0.1 for taking all the requests. It must exist first.
    run_test
 2) one test node gen_rpc_bench@127.0.0.1 to send out requests
 
 There are other setups configurations. Consule basho tech documentation.
 
-Get your test results:
+##Get your test results:
 make all_results <-- this runs all tests. consult Makefile for other options
 make results-browser  <-- spin out browser for pretty plot of test logs
 
