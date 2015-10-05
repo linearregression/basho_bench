@@ -1,1 +1,1 @@
-example/run_test.sh
+./example_script/run_test.sh
