@@ -8,23 +8,25 @@ Gen_rpc is the project under test.
 
 ##The example setup:
 * one target node: gen_rpc_target@127.0.0.1 for taking all the requests. It must exist first.
-* 
----call run_target.sh
-* one test node gen_rpc_bench@127.0.0.1 to send out requests
----call run_test.sh
+call run_target.sh
+* one test node gen_rpc_bench@127.0.0.1 to send out requests.
+call run_test.sh
 
-There are other setups configurations. Consule basho tech documentation.
+There are other setups configurations. Consult basho tech documentation.
 
 ##Get your test results:
-make all_results <-- this runs all tests. consult Makefile for other options
-make results-browser  <-- spin out browser for pretty plot of test logs
+* make all_results  (this runs all tests. consult Makefile for other options)
+* make results-browser  (spin out browser for pretty plot of test logs)
+** Other options availble in Makefile
 
-Files of insterest:
-./examples -- gen_rpc.config 
-./example_script
+## Other Files/Folders of insterest:
+
+* ./examples -- gen_rpc.config 
+* 
+*./example_script
     --
     --
-./tests <-- all the test logs/crash logs etc. Results are in csv file.
+./tests ( test logs/crash logs etc. Results are in csv file.)
 Sample test run for a one minute test:
 example_script/gen_rpc_sample_run.pdf  <-- jsut a sample plot.
 
