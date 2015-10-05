@@ -92,13 +92,13 @@ init([SupChild, Id]) ->
     {A1, A2, A3} =
         case basho_bench_config:get(rng_seed, {42, 23, 12}) of
             {Aa, Ab, Ac} -> {Aa, Ab, Ac};
-            now -> now()
+            now -> os:timestamp() %now() is deprecated
         end,
 
     RngSeed = {A1+Id, A2+Id, A3+Id},
 
     %% Pull all config settings from environment
-    Driver  = basho_bench_config:get(driver),
+    Driver  = basho_bench_config:get(driver, 'undefined'),
     Ops     = ops_tuple(),
     ShutdownOnError = basho_bench_config:get(shutdown_on_error, false),
 
@@ -216,8 +216,9 @@ worker_init(State) ->
     random:seed(State#state.rng_seed),
     worker_idle_loop(State).
 
-worker_idle_loop(State) ->
-    Driver = State#state.driver,
+worker_idle_loop(#state{driver='undefined'}) -> 
+     ?FAIL_MSG("Failed to initialize driver: ~p\n", ['undefined']); 
+worker_idle_loop(#state{driver=Driver}=State) ->
     receive
         {init_driver, Caller} ->
             %% Spin up the driver implementation
@@ -228,8 +229,9 @@ worker_idle_loop(State) ->
                 Error ->
                     Caller ! {init_driver_failed, Error},
                     DriverState = undefined, % Make erlc happy
-                    ?FAIL_MSG("Failed to initialize driver ~p: ~p\n", [Driver, Error])
+                    ?FAIL_MSG("Failed to initialize driver: ~p Error: ~p\n", [Driver, Error])
             end,
+
             worker_idle_loop(State#state { driver_state = DriverState });
         run ->
             case basho_bench_config:get(mode) of
@@ -255,6 +257,7 @@ worker_next_op(State) ->
     Next = element(random:uniform(State#state.ops_len), State#state.ops),
     {_Label, OpTag} = Next,
     Start = os:timestamp(),
+    ?INFO("Module=worker_next_op TestDriver: ~s Worker: ~p Test Run: ~p\n", [State#state.driver, State#state.id, OpTag]),
     Result = worker_next_op2(State, OpTag),
     ElapsedUs = erlang:max(0, timer:now_diff(os:timestamp(), Start)),
     case Result of

@@ -47,7 +47,8 @@
          %%
          %% Driver module for the current test
          %%
-         {driver, basho_bench_driver_http_raw},
+         {driver, 'basho_bench_driver_gen_rpc'},
+         %%{driver, [must_have_a_driver]},
 
          %%
          %% Operations (and associated mix). Note that
