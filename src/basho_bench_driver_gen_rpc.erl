@@ -55,6 +55,20 @@ run(call, _KeyGen, _ValueGen, State) ->
         _Ign -> Replies = State#state.replies,
                 {ok, State#state{replies=Replies+1}}
     end;
+
+run(call_lamda, _KeyGen, _ValueGen, State) ->
+    TargetNode = State#state.target,
+    ?DEBUG("Testing [call_anonymous] target_node=\"~p\"", [TargetNode]),
+    {ok, all_process_alive} = ensure_core_process_alive(),
+    case gen_rpc:call(TargetNode , erlang, apply, [fun() -> os:timestamp() end], []) of
+        {'error', Reason} -> {error, Reason, State}; 
+        {'EXIT', Reason} -> {error, Reason, State};
+        {'badrpc', Reason} -> {error, Reason, State};
+        {'badtcp', Reason} -> {error, Reason, State};
+        _Ign -> Replies = State#state.replies,
+                {ok, State#state{replies=Replies+1}}
+    end;
+
  
 run(cast, _KeyGen, _ValueGen, State) ->
     TargetNode = State#state.target,
@@ -97,7 +111,7 @@ ensure_target_nodes()->
     TargetPool   = basho_bench_config:get('gen_rpc_client_target_nodes'),
     Cookie  = basho_bench_config:get('gen_rpc_client_cookie', 'genrpc'),
     BenchmarkNode  = basho_bench_config:get('gen_rpc_client_benchmark', ['genrpc', longnames]),
-    {ok, {BenchmarkNode, started}} = spin_up_initiator(BenchmarkNode),
+    {ok, {BenchmarkNode, _}} = spin_up_initiator(BenchmarkNode),
     %% Initialize cookie for each of the nodes
     [begin 
         N0= check_target_node(N),
@@ -116,8 +130,8 @@ spin_up_initiator(Node)->
         {ok, _} ->
             ?INFO("module=\"~p\" function=spin_up_initiator event=benchmark_initiator_up Node=\"~p\"", [?MODULE, node()]),
             {ok, {Node, started}};
-        {error, {already_started, _}} ->
-            {ok, {Node, started}};
+        {error,{already_started, _Pid}} ->
+            {ok, {Node, already_started}};
         {error, Reason} ->
             ?FAIL_MSG("module=\"~p\" function=spin_up_initiator event=fail_start_benchmark_initiator Reason=\"~p\"", [?MODULE, Reason])
     end.
