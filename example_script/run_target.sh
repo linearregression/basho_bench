@@ -3,7 +3,6 @@ echo "Start a target server"
 TARGET_NODE_NAME=gen_rpc_target@127.0.0.1
 TEST_SYS_COOKIE=genrpc
 
-# Bootstrap a test target Node 
 echo "Starting gen_rpc Bench Test"
 eval "erl \
     -name \"${TARGET_NODE_NAME}\" \
@@ -13,5 +12,5 @@ eval "erl \
     -eval \"application:start(asn1)\" \
     -eval \"application:start(public_key)\" \
     -eval \"application:start(ssl)\" \
-    -eval \"application:start(lager)\" 
+    -eval \"lager:start()\" \
     -eval \"application:start(gen_rpc)\""
