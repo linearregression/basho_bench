@@ -3,8 +3,7 @@ echo "Start a target server"
 TARGET_NODE_NAME=gen_rpc_target@127.0.0.1
 TEST_SYS_COOKIE=genrpc
 
-#erl -name ${TARGET_NODE_NAME} -setcookie ${TEST_SYS_COOKIE} -pa ./deps/*/ebin -pa ./deps/gen_rpc/_build/dev/lib/*/ebin --eval 'application:start(gen_rpc)'
-# Start Beehive
+# Bootstrap a test target Node 
 echo "Starting gen_rpc Bench Test"
 eval "erl \
     -name \"${TARGET_NODE_NAME}\" \
