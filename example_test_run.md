@@ -5,6 +5,7 @@ Gen_rpc is the project under test.
 ##Build the test tool:
 * build_test_tool.sh (calls basho bench make script & call gen_rpc build script).
 * This build script is a hack. Basho bench is built under old version of rebar doesn't fully recognise dependency built from rebar3 folder structure (e.g. gen_rpc).
+* specifiy your test driver in basho_bench.app (check basho_bench.app.src for example).
 
 ##The example setup:
 * one target node: gen_rpc_target@127.0.0.1 for taking all the requests. It must exist first.
